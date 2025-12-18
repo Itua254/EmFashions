@@ -29,31 +29,30 @@ export default function Home() {
 
       {/* HERO SECTION */}
       <section className="relative pt-24 md:pt-32 pb-20 px-4 md:px-8">
-        <div className="bg-[#EBE5DF] rounded-3xl overflow-hidden relative min-h-[600px] flex items-center justify-center">
-          {/* Background Image Placeholder - In real app this would be a high res fashion shot */}
+        <div className="bg-black rounded-3xl overflow-hidden relative min-h-[600px] flex items-center justify-center">
+          {/* Background Image - Logo */}
           <div
-            className="absolute inset-0 opacity-20"
+            className="absolute inset-0 opacity-40"
             style={{
               backgroundImage: 'url("/logo.jpg")',
               backgroundSize: 'contain',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              mixBlendMode: 'multiply'
             }}
           />
 
           <div className="relative z-10 text-center space-y-8 max-w-4xl mx-auto px-4">
-            <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-6xl lg:text-8xl text-[var(--color-coffee-dark)] font-medium leading-tight tracking-tight">
+            <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-6xl lg:text-8xl text-white font-medium leading-tight tracking-tight">
               WEAR YOUR <br /> CONFIDENCE
             </h1>
-            <p className="text-[var(--color-coffee-dark)] text-lg max-w-xl mx-auto font-light">
+            <p className="text-neutral-300 text-lg max-w-xl mx-auto font-light">
               Modern aesthetics meet timeless design. Discover a wardrobe that speaks before you do.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Link href="/shop" className="bg-[var(--color-coffee-dark)] text-white px-8 py-4 rounded-full font-medium hover:bg-black transition-colors w-full sm:w-auto min-w-[160px]">
+              <Link href="/shop" className="bg-white text-black px-8 py-4 rounded-full font-medium hover:bg-neutral-200 transition-colors w-full sm:w-auto min-w-[160px]">
                 Shop Now
               </Link>
-              <Link href="/shop" className="border border-[var(--color-coffee-dark)] text-[var(--color-coffee-dark)] px-8 py-4 rounded-full font-medium hover:bg-[#D8D0C5] transition-colors w-full sm:w-auto min-w-[160px]">
+              <Link href="/shop" className="border border-white text-white px-8 py-4 rounded-full font-medium hover:bg-white hover:text-black transition-colors w-full sm:w-auto min-w-[160px]">
                 Current Collection
               </Link>
             </div>
