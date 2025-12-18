@@ -6,7 +6,6 @@ import Navbar from '@/components/navbar';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { formatPrice } from '@/lib/currency';
-import { MOCK_PRODUCTS } from '@/lib/mock-products';
 import { Check, FilterX, Heart, Star, ShoppingBag } from 'lucide-react';
 
 const CATEGORIES = {
@@ -53,15 +52,14 @@ export default function ShopPage() {
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            let allProducts = [];
-            if (error || !data || data.length === 0) {
-                allProducts = MOCK_PRODUCTS;
-            } else {
-                // simplistic merge for demo
-                allProducts = data.length < 4 ? [...data, ...MOCK_PRODUCTS] : data;
+            if (error) {
+                console.error('Error fetching products:', error);
+                setProducts([]);
+                return;
             }
 
             // Custom Sort: Clothes > Shoes > Bags > Others
+            const allProducts = data || [];
             allProducts.sort((a, b) => {
                 const catA = CATEGORY_PRIORITY.indexOf(a.category) === -1 ? 999 : CATEGORY_PRIORITY.indexOf(a.category);
                 const catB = CATEGORY_PRIORITY.indexOf(b.category) === -1 ? 999 : CATEGORY_PRIORITY.indexOf(b.category);
@@ -71,7 +69,7 @@ export default function ShopPage() {
             setProducts(allProducts);
         } catch (error) {
             console.error('Error fetching products:', error);
-            setProducts(MOCK_PRODUCTS);
+            setProducts([]);
         } finally {
             setLoading(false);
         }

@@ -1,6 +1,8 @@
 'use client';
 
-import { MOCK_PRODUCTS } from '@/lib/mock-products';
+import { useEffect, useState } from 'react';
+import { getLatestProducts, getFeaturedProducts } from '@/lib/api';
+import { Product } from '@/lib/supabase';
 import { formatPrice } from '@/lib/currency';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -17,11 +19,23 @@ const CATEGORIES = [
 ];
 
 export default function Home() {
-  // Get latest products (first 3)
-  const latestProducts = MOCK_PRODUCTS.slice(0, 3);
+  const [latestProducts, setLatestProducts] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Get featured (random 4 for demo)
-  const featuredProducts = MOCK_PRODUCTS.slice(4, 8);
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      const [latest, featured] = await Promise.all([
+        getLatestProducts(3),
+        getFeaturedProducts(4)
+      ]);
+      setLatestProducts(latest);
+      setFeaturedProducts(featured);
+      setLoading(false);
+    }
+    fetchProducts();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[var(--color-warm-white)] font-['Montserrat']">

@@ -1,22 +1,67 @@
--- Em Fashions Consolidated Database Schema
+-- EM FASHIONS FINAL DATABASE SETUP
+-- This handles ALL edge cases including storage policies
 -- Run this in your Supabase SQL Editor
--- 1. Profiles Table
-CREATE TABLE IF NOT EXISTS public.profiles (
+-- STEP 1: Drop ALL existing policies (including storage)
+DO $$
+DECLARE pol RECORD;
+BEGIN -- Drop policies on public tables
+FOR pol IN
+SELECT policyname,
+    tablename,
+    schemaname
+FROM pg_policies
+WHERE schemaname = 'public'
+    AND tablename IN (
+        'profiles',
+        'products',
+        'categories',
+        'orders',
+        'order_items'
+    ) LOOP EXECUTE format(
+        'DROP POLICY IF EXISTS %I ON %I.%I',
+        pol.policyname,
+        pol.schemaname,
+        pol.tablename
+    );
+END LOOP;
+-- Drop storage policies
+FOR pol IN
+SELECT policyname,
+    tablename,
+    schemaname
+FROM pg_policies
+WHERE schemaname = 'storage'
+    AND tablename = 'objects' LOOP EXECUTE format(
+        'DROP POLICY IF EXISTS %I ON %I.%I',
+        pol.policyname,
+        pol.schemaname,
+        pol.tablename
+    );
+END LOOP;
+END $$;
+-- STEP 2: Drop Tables
+DROP TABLE IF EXISTS public.order_items CASCADE;
+DROP TABLE IF EXISTS public.orders CASCADE;
+DROP TABLE IF EXISTS public.products CASCADE;
+DROP TABLE IF EXISTS public.categories CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+-- STEP 3: Create Profiles Table
+CREATE TABLE public.profiles (
     id uuid references auth.users not null primary key,
     updated_at timestamp with time zone,
     full_name text,
     avatar_url text
 );
--- 2. Categories Table
-CREATE TABLE IF NOT EXISTS public.categories (
+-- STEP 4: Create Categories Table
+CREATE TABLE public.categories (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     name text NOT NULL UNIQUE,
     slug text NOT NULL UNIQUE,
     image_url text,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
--- 3. Products Table
-CREATE TABLE IF NOT EXISTS public.products (
+-- STEP 5: Create Products Table
+CREATE TABLE public.products (
     id text PRIMARY KEY,
     name text NOT NULL,
     description text,
@@ -31,8 +76,8 @@ CREATE TABLE IF NOT EXISTS public.products (
     stock integer DEFAULT 0,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
--- 4. Orders Table
-CREATE TABLE IF NOT EXISTS public.orders (
+-- STEP 6: Create Orders Table
+CREATE TABLE public.orders (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id uuid references auth.users,
     status text DEFAULT 'pending',
@@ -41,8 +86,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
     payment_intent_id text,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
--- 5. Order Items Table
-CREATE TABLE IF NOT EXISTS public.order_items (
+-- STEP 7: Create Order Items Table
+CREATE TABLE public.order_items (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     order_id uuid references public.orders(id) ON DELETE CASCADE,
     product_id text references public.products(id),
@@ -50,34 +95,36 @@ CREATE TABLE IF NOT EXISTS public.order_items (
     price_at_purchase numeric NOT NULL,
     variant_color text
 );
--- 6. Storage Buckets
+-- STEP 8: Create Storage Buckets
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('products', 'products', true),
-    ('avatars', 'avatars', true) ON CONFLICT (id) do nothing;
--- 7. RLS Policies
--- Profiles
+    ('avatars', 'avatars', true) ON CONFLICT (id) DO
+UPDATE
+SET public = true;
+-- STEP 9: Enable RLS on all tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+-- STEP 10: Create RLS Policies for Profiles
 CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR
 SELECT USING (true);
 CREATE POLICY "Users can insert their own profile." ON public.profiles FOR
 INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile." ON public.profiles FOR
 UPDATE USING (auth.uid() = id);
--- Categories
-ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+-- STEP 11: Create RLS Policies for Categories
 CREATE POLICY "Categories are viewable by everyone" ON public.categories FOR
 SELECT USING (true);
--- Products
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+-- STEP 12: Create RLS Policies for Products
 CREATE POLICY "Products are viewable by everyone" ON public.products FOR
 SELECT USING (true);
--- Orders
-ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+-- STEP 13: Create RLS Policies for Orders
 CREATE POLICY "Users can view own orders" ON public.orders FOR
 SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own orders" ON public.orders FOR
 INSERT WITH CHECK (auth.uid() = user_id);
--- Storage
+-- STEP 14: Create Storage Policies
 CREATE POLICY "Product images are publicly accessible" ON storage.objects FOR
 SELECT USING (bucket_id = 'products');
 CREATE POLICY "Avatar images are publicly accessible" ON storage.objects FOR

@@ -1,22 +1,53 @@
--- Em Fashions Consolidated Database Schema
--- Run this in your Supabase SQL Editor
--- 1. Profiles Table
-CREATE TABLE IF NOT EXISTS public.profiles (
+-- EM FASHIONS ULTRA-ROBUST DATABASE SETUP (FIXED)
+-- This script will clear and recreate EVERYTHING.
+-- Run this in your Supabase SQL Editor.
+-- STEP 0: Clean up everything safely using a loop
+DO $$
+DECLARE pol RECORD;
+BEGIN -- Drop Policies for the relevant tables
+FOR pol IN
+SELECT policyname,
+    tablename,
+    schemaname
+FROM pg_policies
+WHERE schemaname = 'public'
+    AND tablename IN (
+        'profiles',
+        'products',
+        'categories',
+        'orders',
+        'order_items'
+    ) LOOP EXECUTE format(
+        'DROP POLICY IF EXISTS %I ON %I.%I',
+        pol.policyname,
+        pol.schemaname,
+        pol.tablename
+    );
+END LOOP;
+-- Drop Tables
+DROP TABLE IF EXISTS public.order_items CASCADE;
+DROP TABLE IF EXISTS public.orders CASCADE;
+DROP TABLE IF EXISTS public.products CASCADE;
+DROP TABLE IF EXISTS public.categories CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+END $$;
+-- STEP 1: Profiles Table
+CREATE TABLE public.profiles (
     id uuid references auth.users not null primary key,
     updated_at timestamp with time zone,
     full_name text,
     avatar_url text
 );
--- 2. Categories Table
-CREATE TABLE IF NOT EXISTS public.categories (
+-- STEP 2: Categories Table
+CREATE TABLE public.categories (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     name text NOT NULL UNIQUE,
     slug text NOT NULL UNIQUE,
     image_url text,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
--- 3. Products Table
-CREATE TABLE IF NOT EXISTS public.products (
+-- STEP 3: Products Table
+CREATE TABLE public.products (
     id text PRIMARY KEY,
     name text NOT NULL,
     description text,
@@ -31,8 +62,8 @@ CREATE TABLE IF NOT EXISTS public.products (
     stock integer DEFAULT 0,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
--- 4. Orders Table
-CREATE TABLE IF NOT EXISTS public.orders (
+-- STEP 4: Orders Table
+CREATE TABLE public.orders (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id uuid references auth.users,
     status text DEFAULT 'pending',
@@ -41,8 +72,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
     payment_intent_id text,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
--- 5. Order Items Table
-CREATE TABLE IF NOT EXISTS public.order_items (
+-- STEP 5: Order Items Table
+CREATE TABLE public.order_items (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     order_id uuid references public.orders(id) ON DELETE CASCADE,
     product_id text references public.products(id),
@@ -50,11 +81,13 @@ CREATE TABLE IF NOT EXISTS public.order_items (
     price_at_purchase numeric NOT NULL,
     variant_color text
 );
--- 6. Storage Buckets
+-- STEP 6: Storage Buckets (Public)
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('products', 'products', true),
-    ('avatars', 'avatars', true) ON CONFLICT (id) do nothing;
--- 7. RLS Policies
+    ('avatars', 'avatars', true) ON CONFLICT (id) DO
+UPDATE
+SET public = true;
+-- STEP 7: RLS Setup
 -- Profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR
@@ -77,7 +110,8 @@ CREATE POLICY "Users can view own orders" ON public.orders FOR
 SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own orders" ON public.orders FOR
 INSERT WITH CHECK (auth.uid() = user_id);
--- Storage
+-- Storage (Simple public read policies)
+-- The Seeding script uses Service Role Key, so it doesn't need upload policies here.
 CREATE POLICY "Product images are publicly accessible" ON storage.objects FOR
 SELECT USING (bucket_id = 'products');
 CREATE POLICY "Avatar images are publicly accessible" ON storage.objects FOR
