@@ -32,8 +32,14 @@ export default function Home() {
         <div className="bg-[#EBE5DF] rounded-3xl overflow-hidden relative min-h-[600px] flex items-center justify-center">
           {/* Background Image Placeholder - In real app this would be a high res fashion shot */}
           <div
-            className="absolute inset-0 opacity-10"
-            style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop")', backgroundSize: 'cover', backgroundPosition: 'center' }}
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: 'url("/logo.jpg")',
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              mixBlendMode: 'multiply'
+            }}
           />
 
           <div className="relative z-10 text-center space-y-8 max-w-4xl mx-auto px-4">
