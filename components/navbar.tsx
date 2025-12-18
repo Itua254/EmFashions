@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, User, ShoppingBag } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 export default function Navbar() {
     const totalItems = useCartStore((state) => state.getTotalItems());
     const [mounted, setMounted] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setMounted(true), 0);
@@ -34,7 +35,7 @@ export default function Navbar() {
         >
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
-                    {/* Left Navigation */}
+                    {/* Left Navigation - Desktop */}
                     <div className="hidden md:flex items-center gap-8">
                         {links.map((link) => (
                             <Link
@@ -48,18 +49,29 @@ export default function Navbar() {
                         ))}
                     </div>
 
+                    {/* Mobile Menu Button - Left */}
+                    <div className="md:hidden flex items-center">
+                        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                            {isMobileMenuOpen ? (
+                                <X className="w-6 h-6" style={{ color: 'var(--color-coffee-dark)' }} />
+                            ) : (
+                                <Menu className="w-6 h-6" style={{ color: 'var(--color-coffee-dark)' }} />
+                            )}
+                        </Button>
+                    </div>
+
                     {/* Centered Logo */}
                     <Link href="/" className="absolute left-1/2 transform -translate-x-1/2 hover:opacity-90 transition-opacity">
-                        <img src="/logo.jpg" alt="Em Fashions" className="h-14 w-auto mix-blend-multiply" />
+                        <img src="/logo.jpg" alt="Em Fashions" className="h-10 md:h-14 w-auto mix-blend-multiply" />
                     </Link>
 
                     {/* Right Icons */}
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" className="hover:bg-neutral-100/50 rounded-full">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <Button variant="ghost" size="icon" className="hidden md:flex hover:bg-neutral-100/50 rounded-full">
                             <Search className="w-5 h-5" style={{ color: 'var(--color-coffee-dark)' }} />
                         </Button>
 
-                        <Link href="/login">
+                        <Link href="/login" className="hidden md:block">
                             <Button variant="ghost" size="icon" className="hover:bg-neutral-100/50 rounded-full">
                                 <User className="w-5 h-5" style={{ color: 'var(--color-coffee-dark)' }} />
                             </Button>
@@ -82,6 +94,30 @@ export default function Navbar() {
                         </Link>
                     </div>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden border-t border-neutral-200/50 bg-[var(--color-warm-white)]"
+                    >
+                        <div className="flex flex-col py-4 gap-2">
+                            {links.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="px-4 py-3 text-sm uppercase tracking-widest font-medium hover:bg-neutral-100 transition-colors"
+                                    style={{ color: 'var(--color-coffee-dark)' }}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
             </div>
         </motion.nav>
     );

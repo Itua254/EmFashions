@@ -31,9 +31,12 @@ export function ProductCard({ product }: ProductCardProps) {
                 />
                 <button
                     onClick={handleAddToCart}
-                    className={`absolute bottom-4 right-4 p-3 rounded-full shadow-sm transition-all duration-300 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 ${isAdded
-                        ? "bg-[#25D366] text-white"
-                        : "bg-white hover:bg-[var(--color-coffee-dark)] hover:text-white"
+                    className={`absolute bottom-4 right-4 p-3 rounded-full shadow-sm transition-all duration-300 transform
+                        opacity-100 translate-y-0
+                        lg:opacity-0 lg:translate-y-2 lg:group-hover:translate-y-0 lg:group-hover:opacity-100
+                        ${isAdded
+                            ? "bg-[#25D366] text-white"
+                            : "bg-white hover:bg-[var(--color-coffee-dark)] hover:text-white"
                         }`}
                 >
                     {isAdded ? <Check size={20} /> : <ShoppingBag size={20} />}
