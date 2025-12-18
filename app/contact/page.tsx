@@ -40,8 +40,8 @@ export default function ContactPage() {
                                 animate={{ x: 0, opacity: 1 }}
                                 className="space-y-8"
                             >
-                                <div>
-                                    <h1 className="font-['Cormorant_Garamond'] text-4xl text-[#4A3B32] mb-6">Contact Us</h1>
+                                <div className="text-center md:text-left">
+                                    <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-[#4A3B32] mb-6">Contact Us</h1>
                                     <p className="text-[#8C8C8C] font-light leading-relaxed">
                                         We&apos;d love to hear from you. Whether you have a question about our collections, pricing, or need assistance with your order.
                                     </p>
@@ -125,7 +125,7 @@ export default function ContactPage() {
                                             placeholder="How can we help?"
                                         ></textarea>
                                     </div>
-                                    <Button type="submit" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl h-12 uppercase tracking-widest text-xs font-medium shadow-sm hover:shadow-md transition-all">
+                                    <Button type="submit" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full h-12 uppercase tracking-widest text-xs font-medium shadow-sm hover:shadow-md transition-all">
                                         <Send size={16} className="mr-2" />
                                         Send via WhatsApp
                                     </Button>

@@ -98,7 +98,7 @@ export default function ShopPage() {
                     <div className="absolute inset-0" style={{ backgroundColor: 'rgba(74, 59, 50, 0.3)' }} /> {/* Coffee overlay */}
                 </div>
                 <div className="relative container mx-auto px-4 text-center text-white">
-                    <h1 className="text-5xl md:text-6xl font-normal tracking-widest uppercase mb-4 font-serif">The Collection</h1>
+                    <h1 className="text-4xl md:text-6xl lg:text-8xl font-medium tracking-widest uppercase mb-4 font-serif">The Collection</h1>
                     <p className="max-w-xl mx-auto font-light tracking-wide text-lg text-neutral-100">
                         Curated pieces for the modern individual. Elevate your style today.
                     </p>
