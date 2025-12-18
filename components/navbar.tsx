@@ -3,18 +3,39 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, User, ShoppingBag, Menu, X } from 'lucide-react';
+
 import { useCartStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import SearchModal from '@/components/search-modal';
+import AuthModal from '@/components/auth-modal';
+import { supabase } from '@/lib/supabase';
+import { User as UserType } from '@supabase/supabase-js';
 
 export default function Navbar() {
     const totalItems = useCartStore((state) => state.getTotalItems());
     const [mounted, setMounted] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isAuthOpen, setIsAuthOpen] = useState(false);
+    const [user, setUser] = useState<UserType | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => setMounted(true), 0);
-        return () => clearTimeout(timer);
+
+        // Check auth
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => {
+            clearTimeout(timer);
+            subscription.unsubscribe();
+        };
     }, []);
 
     const links = [
@@ -67,15 +88,33 @@ export default function Navbar() {
 
                     {/* Right Icons */}
                     <div className="flex items-center gap-2 md:gap-4">
-                        <Button variant="ghost" size="icon" className="hidden md:flex hover:bg-neutral-100/50 rounded-full">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hidden md:flex hover:bg-neutral-100/50 rounded-full"
+                            onClick={() => setIsSearchOpen(true)}
+                        >
                             <Search className="w-5 h-5" style={{ color: 'var(--color-coffee-dark)' }} />
                         </Button>
 
-                        <Link href="/login" className="hidden md:block">
-                            <Button variant="ghost" size="icon" className="hover:bg-neutral-100/50 rounded-full">
-                                <User className="w-5 h-5" style={{ color: 'var(--color-coffee-dark)' }} />
-                            </Button>
-                        </Link>
+                        <div className="hidden md:block">
+                            {user ? (
+                                <Link href="/account">
+                                    <Button variant="ghost" size="icon" className="hover:bg-neutral-100/50 rounded-full">
+                                        <User className="w-5 h-5" style={{ color: 'var(--color-coffee-dark)' }} />
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="hover:bg-neutral-100/50 rounded-full"
+                                    onClick={() => setIsAuthOpen(true)}
+                                >
+                                    <User className="w-5 h-5" style={{ color: 'var(--color-coffee-dark)' }} />
+                                </Button>
+                            )}
+                        </div>
 
                         <Link href="/cart">
                             <Button variant="ghost" size="icon" className="relative hover:bg-neutral-100/50 rounded-full">
@@ -119,6 +158,16 @@ export default function Navbar() {
                     </motion.div>
                 )}
             </div>
+
+            <SearchModal
+                isOpen={isSearchOpen}
+                onClose={() => setIsSearchOpen(false)}
+            />
+
+            <AuthModal
+                isOpen={isAuthOpen}
+                onClose={() => setIsAuthOpen(false)}
+            />
         </motion.nav>
     );
 }
